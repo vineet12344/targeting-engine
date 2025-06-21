@@ -11,7 +11,7 @@ func SeedCampaings() error {
 			CTA:      "Install Now",
 			Rules: []TargetingRule{
 				{
-					IncludeCountry: "IN",
+					IncludeCountry: "IN,JP,US",
 					IncludeApp:     "com.test.app",
 					IncludeOS:      "android",
 				},
@@ -19,12 +19,12 @@ func SeedCampaings() error {
 		},
 		{
 			ID:       "cmp456",
-			Status:   "INACTIVE",
+			Status:   "ACTIVE",
 			ImageURL: "https://example.com/ad2.png",
 			CTA:      "Try Free",
 			Rules: []TargetingRule{
 				{
-					IncludeCountry: "US",
+					ExcludeCountry: "US,IN",
 					IncludeApp:     "com.shop.app",
 					IncludeOS:      "ios",
 				},

@@ -17,6 +17,8 @@ import (
 
 func main() {
 
+	gin.SetMode(gin.ReleaseMode)
+
 	// Load ENV Variables
 	if err := godotenv.Load(); err != nil {
 		log.Println("No .env file found")
@@ -38,21 +40,23 @@ func main() {
 
 	log.Println(" ✅ Automigration of Database Sucessfull!")
 
-	// if err := campaign.SeedCampaings(); err != nil {
-	// 	log.Fatalf("❌ Failed to seed campaigns: %v", err)
+	// seed database
+		// if err = campaign.SeedCampaings(); err != nil {
+	// 	log.Printf("Cannot seed database %v", err)
 	// }
-
-	// log.Println(" ✅ Database seeded Sucessfully ! ")
+	// log.Println(" ✅ Seeding of Database Sucessfull Successfull !")
 
 	campaignService := campaign.NewCampaignService()
 
-	campaigns, err := campaignService.GetActiveCampaings()
-
-	if err != nil {
-		log.Fatalf("❌ Failed to fetch active campaigns: %v", err)
+	// Load initial cache from DB
+	if err := campaign.LoadToCache(campaignService); err != nil {
+		log.Fatalf("❌ Failed to load initial campaign cache: %v", err)
 	}
 
-	log.Printf("✅ Loaded %d active campaigns\n", len(campaigns))
+	log.Println("✅ Campaign cache loaded into memory")
+
+	stopChan := make(chan struct{})
+	campaign.StartAutoRefresh(campaignService, 1*time.Minute, stopChan)
 
 	router := gin.Default()
 	router.GET("/health", func(c *gin.Context) { c.JSON(200, gin.H{"Message": "Server up and running"}) })
@@ -86,12 +90,16 @@ func main() {
 	if err := srv.Shutdown(ctx); err != nil {
 		log.Fatalf("❌ Server forced to shutdown: %v", err)
 	} else {
-		log.Println("✅ DB connection closed.")
+		log.Println("🛑 DB connection closed.")
 	}
+
+	// Stop Auto-refresh
+	close(stopChan)
+	log.Println("🛑 Ticker Stopped successfully")
 
 	if err := sqlDB.Close(); err != nil {
 		log.Printf("❌ Error closing DB connection: %v", err)
 	}
 
-	log.Println("✅ Server shutdown cleanly")
+	log.Println("🛑 Server shutdown cleanly")
 }
