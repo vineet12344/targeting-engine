@@ -25,16 +25,34 @@ func main() {
 	// fmt.Println("Hello World")
 	// Connectign to Database
 	db.ConnectDB()
-	sqlDB, _ := db.DB.DB()
-	defer sqlDB.Close()
+	sqlDB, err := db.DB.DB()
+	if err != nil {
+		log.Fatalf("Failed to get DB Pool %v", err)
+	}
 
 	// Automigrate Database
-	err := db.DB.AutoMigrate(&campaign.Campaign{}, &campaign.TargetingRule{})
+	err = db.DB.AutoMigrate(&campaign.Campaign{}, &campaign.TargetingRule{})
 	if err != nil {
-		log.Fatal("❌ Failed to AutoMigrate DB %v", err)
+		log.Fatalf("❌ Failed to AutoMigrate DB %v", err)
 	}
 
 	log.Println(" ✅ Automigration of Database Sucessfull!")
+
+	// if err := campaign.SeedCampaings(); err != nil {
+	// 	log.Fatalf("❌ Failed to seed campaigns: %v", err)
+	// }
+
+	// log.Println(" ✅ Database seeded Sucessfully ! ")
+
+	campaignService := campaign.NewCampaignService()
+
+	campaigns, err := campaignService.GetActiveCampaings()
+
+	if err != nil {
+		log.Fatalf("❌ Failed to fetch active campaigns: %v", err)
+	}
+
+	log.Printf("✅ Loaded %d active campaigns\n", len(campaigns))
 
 	router := gin.Default()
 	router.GET("/health", func(c *gin.Context) { c.JSON(200, gin.H{"Message": "Server up and running"}) })
@@ -52,7 +70,7 @@ func main() {
 	// Running Server in Goroutine
 	go func() {
 		log.Printf("🚀 Server running on port %s", port)
-		if err := srv.ListenAndServe(); err != nil {
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("❌ ListenAndServe error: %v", err)
 		}
 	}()
@@ -67,7 +85,13 @@ func main() {
 
 	if err := srv.Shutdown(ctx); err != nil {
 		log.Fatalf("❌ Server forced to shutdown: %v", err)
+	} else {
+		log.Println("✅ DB connection closed.")
 	}
 
-	log.Println("✅ Server exited cleanly")
+	if err := sqlDB.Close(); err != nil {
+		log.Printf("❌ Error closing DB connection: %v", err)
+	}
+
+	log.Println("✅ Server shutdown cleanly")
 }
