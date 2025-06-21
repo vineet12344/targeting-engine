@@ -40,15 +40,15 @@ func ruleMatches(rule TargetingRule, req CampaignRequest) bool {
 	}
 
 	// Match Exclude values
-	if !matchesExclude(rule.ExcludeApp, req.App) {
+	if matchesExclude(rule.ExcludeApp, req.App) {
 		return false
 	}
 
-	if !matchesExclude(rule.ExcludeCountry, req.Country) {
+	if matchesExclude(rule.ExcludeCountry, req.Country) {
 		return false
 	}
 
-	if !matchesExclude(rule.ExcludeOS, req.OS) {
+	if matchesExclude(rule.ExcludeOS, req.OS) {
 		return false
 	}
 

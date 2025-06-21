@@ -41,7 +41,7 @@ func main() {
 	log.Println(" ✅ Automigration of Database Sucessfull!")
 
 	// seed database
-		// if err = campaign.SeedCampaings(); err != nil {
+	// if err = campaign.SeedCampaings(); err != nil {
 	// 	log.Printf("Cannot seed database %v", err)
 	// }
 	// log.Println(" ✅ Seeding of Database Sucessfull Successfull !")
@@ -59,7 +59,8 @@ func main() {
 	campaign.StartAutoRefresh(campaignService, 1*time.Minute, stopChan)
 
 	router := gin.Default()
-	router.GET("/health", func(c *gin.Context) { c.JSON(200, gin.H{"Message": "Server up and running"}) })
+	// router.GET("/health", func(c *gin.Context) { c.JSON(200, gin.H{"Message": "Server up and running"}) })
+	campaign.RegisterRoutes(router)
 
 	port := os.Getenv("PORT")
 	if port == "" {
