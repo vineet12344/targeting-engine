@@ -3,6 +3,7 @@ package campaign
 import (
 	"log"
 	"strings"
+	"sync"
 )
 
 type CampaignRequest struct {
@@ -14,16 +15,45 @@ type CampaignRequest struct {
 // Main Logic
 func MatchCampaigns(req CampaignRequest) []Campaign {
 	campaigns := GetCachedCampaigns()
-	var matches []Campaign
-	log.Println("🔍 Matching for request:", req)
+	// var matches []Campaign
+	// log.Println("🔍 Matching for request:", req)
 
-	for _, c := range campaigns {
-		for _, rule := range c.Rules {
-			if ruleMatches(rule, req) {
-				matches = append(matches, c)
-				break
+	// for _, c := range campaigns {
+	// 	for _, rule := range c.Rules {
+	// 		if ruleMatches(rule, req) {
+	// 			matches = append(matches, c)
+	// 			break
+	// 		}
+	// 	}
+	// }
+
+	resultChan := make(chan Campaign, len(campaigns))
+	var wg sync.WaitGroup
+	var matches []Campaign
+
+	for i, c := range campaigns {
+		campaign := c
+		wg.Add(1)
+
+		go func(i int) {
+			log.Print("Running go-routine: ", i)
+			defer wg.Done()
+
+			for _, rule := range campaign.Rules {
+				if ruleMatches(rule, req) {
+					resultChan <- campaign
+					break
+				}
 			}
-		}
+		}(i)
+
+	}
+
+	wg.Wait()
+	close(resultChan)
+
+	for c := range resultChan {
+		matches = append(matches, c)
 	}
 
 	return matches
