@@ -3,39 +3,61 @@ package campaign
 import "github.com/vineet12344/targeting-engine/pkg/db"
 
 func SeedCampaings() error {
-	campaings := []Campaign{
+	campaigns := []Campaign{
 		{
-			ID:       "cmp123",
+			ID:       "cmp_spotify",
 			Status:   "ACTIVE",
-			ImageURL: "https://example.com/ad1.png",
-			CTA:      "Install Now",
+			ImageURL: "https://ads.spotifycdn.com/download-now.png",
+			CTA:      "Download",
 			Rules: []TargetingRule{
 				{
-					IncludeCountry: "IN,JP,US",
-					IncludeApp:     "com.test.app",
+					IncludeCountry: "US,CA",
+					// No App or OS restriction → should match all apps and OS in US or CA
+				},
+			},
+		},
+		{
+			ID:       "cmp_subwaysurfer",
+			Status:   "ACTIVE",
+			ImageURL: "https://ads.subwaysurfer.com/play.png",
+			CTA:      "Play",
+			Rules: []TargetingRule{
+				{
+					IncludeApp:     "com.gametion.ludokinggame",
+					IncludeOS:      "android",
+					IncludeCountry: "US,IN",
+				},
+			},
+		},
+		{
+			ID:       "cmp_discord",
+			Status:   "ACTIVE",
+			ImageURL: "https://ads.discord.com/join.png",
+			CTA:      "Join",
+			Rules: []TargetingRule{
+				{
+					IncludeCountry: "IN",
 					IncludeOS:      "android",
 				},
 			},
 		},
 		{
-			ID:       "cmp456",
-			Status:   "ACTIVE",
-			ImageURL: "https://example.com/ad2.png",
-			CTA:      "Try Free",
+			ID:       "cmp_inactive",
+			Status:   "INACTIVE",
+			ImageURL: "https://ads.dummy.com/inactive.png",
+			CTA:      "Ignore Me",
 			Rules: []TargetingRule{
 				{
-					ExcludeCountry: "US,IN",
-					IncludeApp:     "com.shop.app",
-					IncludeOS:      "ios",
+					IncludeCountry: "US",
+					IncludeApp:     "com.gametion.ludokinggame",
+					IncludeOS:      "android",
 				},
 			},
 		},
 	}
 
-	for _, c := range campaings {
+	for _, c := range campaigns {
 		db.DB.Create(&c)
 	}
-
 	return nil
-
 }

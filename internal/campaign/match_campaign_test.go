@@ -4,8 +4,8 @@ import (
 	"testing"
 )
 
-// Test MatchCampaign against mock cache
-func TestMatchCampaign(t *testing.T) {
+// Test MatchCampaigns against mock cache
+func TestMatchCampaigns(t *testing.T) {
 	mockCampaigns := []Campaign{
 		{
 			ID:       "cmp001",
@@ -39,9 +39,9 @@ func TestMatchCampaign(t *testing.T) {
 	SetCachedCampaigns(mockCampaigns)
 
 	tests := []struct {
-		name       string
-		req        CampaignRequest
-		wantCampID string
+		name        string
+		req         CampaignRequest
+		wantCampIDs []string
 	}{
 		{
 			name: "Match first campaign (android-IN)",
@@ -50,7 +50,7 @@ func TestMatchCampaign(t *testing.T) {
 				OS:      "android",
 				Country: "IN",
 			},
-			wantCampID: "cmp001",
+			wantCampIDs: []string{"cmp001"},
 		},
 		{
 			name: "Match second campaign (ios-JP)",
@@ -59,7 +59,7 @@ func TestMatchCampaign(t *testing.T) {
 				OS:      "ios",
 				Country: "JP",
 			},
-			wantCampID: "cmp002",
+			wantCampIDs: []string{"cmp002"},
 		},
 		{
 			name: "No match due to excluded country",
@@ -68,23 +68,30 @@ func TestMatchCampaign(t *testing.T) {
 				OS:      "ios",
 				Country: "IN",
 			},
-			wantCampID: "",
+			wantCampIDs: []string{}, // Expecting no matches
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := MatchCampaign(tt.req)
+			got := MatchCampaigns(tt.req)
 
-			if tt.wantCampID == "" && got != nil {
-				t.Errorf("Expected nil campaign, got %+v", got)
-			}
-
-			if tt.wantCampID != "" {
-				if got == nil {
-					t.Errorf("Expected campaign %s, got nil", tt.wantCampID)
-				} else if got.ID != tt.wantCampID {
-					t.Errorf("Expected campaign %s, got %s", tt.wantCampID, got.ID)
+			if len(tt.wantCampIDs) == 0 {
+				if len(got) > 0 {
+					t.Errorf("Expected no campaigns, got %d", len(got))
+				}
+			} else {
+				if len(got) == 0 {
+					t.Errorf("Expected campaigns %v, got none", tt.wantCampIDs)
+				}
+				found := map[string]bool{}
+				for _, c := range got {
+					found[c.ID] = true
+				}
+				for _, expectedID := range tt.wantCampIDs {
+					if !found[expectedID] {
+						t.Errorf("Expected campaign %s not found in results", expectedID)
+					}
 				}
 			}
 		})

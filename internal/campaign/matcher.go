@@ -12,19 +12,21 @@ type CampaignRequest struct {
 }
 
 // Main Logic
-func MatchCampaign(req CampaignRequest) *Campaign {
+func MatchCampaigns(req CampaignRequest) []Campaign {
 	campaigns := GetCachedCampaigns()
+	var matches []Campaign
 	log.Println("🔍 Matching for request:", req)
 
 	for _, c := range campaigns {
 		for _, rule := range c.Rules {
 			if ruleMatches(rule, req) {
-				return &c
+				matches = append(matches, c)
+				break
 			}
 		}
 	}
 
-	return nil
+	return matches
 }
 
 func ruleMatches(rule TargetingRule, req CampaignRequest) bool {

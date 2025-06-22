@@ -24,12 +24,12 @@ func RegisterRoutes(router *gin.Engine) {
 			Country: country,
 		}
 
-		matched := MatchCampaign(req)
+		matched := MatchCampaigns(req)
 
-		if matched == nil {
+		if len(matched) == 0 {
 			middleware.MatchMissCount.Inc()
 			middleware.LogMetricValue("Match_Miss_Count", middleware.MatchMissCount)
-			c.JSON(http.StatusOK, gin.H{"message": "No matching campaign found"})
+			c.JSON(http.StatusNoContent, gin.H{"message": "No matching campaign found"})
 
 			return
 		}

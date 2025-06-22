@@ -42,14 +42,11 @@ func main() {
 	log.Println(" ✅ Automigration of Database Sucessfull!")
 
 	// seed database
-	// if err = campaign.SeedCampaings(); err != nil {
-	// 	log.Printf("Cannot seed database %v", err)
-	// }
-	// log.Println(" ✅ Seeding of Database Sucessfull Successfull !")
+	if err = campaign.SeedCampaings(); err != nil {
+		log.Printf("Cannot seed database %v", err)
+	}
+	log.Println(" ✅ Seeding of Database Sucessfull Successfull !")
 
-
-
-	
 	campaignService := campaign.NewCampaignService()
 
 	// Load initial cache from DB
