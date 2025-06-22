@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/vineet12344/targeting-engine/middleware"
 )
 
 func RegisterRoutes(router *gin.Engine) {
@@ -26,10 +27,15 @@ func RegisterRoutes(router *gin.Engine) {
 		matched := MatchCampaign(req)
 
 		if matched == nil {
+			middleware.MatchMissCount.Inc()
+			middleware.LogMetricValue("Match_Miss_Count", middleware.MatchMissCount)
 			c.JSON(http.StatusOK, gin.H{"message": "No matching campaign found"})
 
 			return
 		}
+
+		middleware.MatchSuccessCount.Inc()
+		middleware.LogMetricValue("Match_SUCCESS_Count", middleware.MatchSuccessCount)
 
 		c.JSON(http.StatusOK, matched)
 
