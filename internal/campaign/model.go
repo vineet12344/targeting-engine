@@ -10,7 +10,7 @@ type Campaign struct {
 
 type TargetingRule struct {
 	ID             uint   `gorm:"primaryKey"`
-	CampaignID     string // Foreign Key
+	CampaignID     string `gorm:"index"`
 	IncludeApp     string
 	ExcludeApp     string
 	IncludeOS      string

@@ -48,3 +48,10 @@ func StartAutoRefresh(service CampaignService, interval time.Duration, stopChan 
 		}
 	}()
 }
+
+// SetCachedCampaigns allows setting mock campaigns in cache (for testing)
+func SetCachedCampaigns(campaigns []Campaign) {
+	cacheMutex.Lock()
+	defer cacheMutex.Unlock()
+	cachedCampaigns = campaigns
+}

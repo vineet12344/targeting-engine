@@ -12,6 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"github.com/vineet12344/targeting-engine/internal/campaign"
+	"github.com/vineet12344/targeting-engine/middleware"
 	"github.com/vineet12344/targeting-engine/pkg/db"
 )
 
@@ -46,6 +47,9 @@ func main() {
 	// }
 	// log.Println(" ✅ Seeding of Database Sucessfull Successfull !")
 
+
+
+	
 	campaignService := campaign.NewCampaignService()
 
 	// Load initial cache from DB
@@ -59,7 +63,11 @@ func main() {
 	campaign.StartAutoRefresh(campaignService, 1*time.Minute, stopChan)
 
 	router := gin.Default()
-	// router.GET("/health", func(c *gin.Context) { c.JSON(200, gin.H{"Message": "Server up and running"}) })
+	router.GET("/health", func(c *gin.Context) { c.JSON(200, gin.H{"Message": "Server up and running"}) })
+	router.Use(middleware.PrometheusMiddleware())
+
+	router.GET("/metrics", middleware.MetricsHandler())
+
 	campaign.RegisterRoutes(router)
 
 	port := os.Getenv("PORT")
