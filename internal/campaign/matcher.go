@@ -6,6 +6,61 @@ import (
 	"sync"
 )
 
+func MatchBatchCampaigns(req CampaignRequest) []Campaign {
+	campaigns := GetCachedCampaigns()
+	numWorkers := 10
+
+	type Result struct {
+		match Campaign
+	}
+
+	jobs := make(chan Campaign, len(campaigns))
+	result := make(chan Result, len(campaigns))
+
+	var wg sync.WaitGroup
+
+	// Here we start N workers
+	for w := 0; w < numWorkers; w++ {
+		wg.Add(1)
+
+		go func(w int) {
+			log.Printf("Running Go-routine %v", w)
+			defer wg.Done()
+			for campaign := range jobs {
+				for _, rule := range campaign.Rules {
+					if ruleMatches(rule, req) {
+						result <- Result{match: campaign}
+						break
+					}
+				}
+			}
+		}(w)
+	}
+
+	for _, c := range campaigns {
+		jobs <- c
+	}
+
+	close(jobs)
+
+	// Wait for workers to finish
+	wg.Wait()
+	close(result)
+
+	var matches []Campaign
+	seen := make(map[string]bool)
+
+	for res := range result {
+		if !seen[res.match.ID] {
+			matches = append(matches, res.match)
+			seen[res.match.ID] = true
+		}
+	}
+
+	return matches
+
+}
+
 // Main Logic
 func MatchCampaigns(req CampaignRequest) []Campaign {
 	campaigns := GetCachedCampaigns()

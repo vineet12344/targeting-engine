@@ -42,7 +42,7 @@ func RegisterRoutes(router *gin.Engine) {
 			Device:  device,
 		}
 
-		matched := MatchCampaigns(req)
+		matched := MatchBatchCampaigns(req)
 
 		if len(matched) == 0 {
 			middleware.MatchMissCount.Inc()
