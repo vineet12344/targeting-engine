@@ -6,12 +6,6 @@ import (
 	"sync"
 )
 
-type CampaignRequest struct {
-	App     string
-	OS      string
-	Country string
-}
-
 // Main Logic
 func MatchCampaigns(req CampaignRequest) []Campaign {
 	campaigns := GetCachedCampaigns()
@@ -49,7 +43,9 @@ func MatchCampaigns(req CampaignRequest) []Campaign {
 
 	}
 
+	// wait for all doroutines to complete their jobs
 	wg.Wait()
+	// close result channel
 	close(resultChan)
 
 	for c := range resultChan {
@@ -70,6 +66,13 @@ func ruleMatches(rule TargetingRule, req CampaignRequest) bool {
 	if !matchesInclude(rule.IncludeOS, req.OS) {
 		return false
 	}
+	if !matchesInclude(rule.IncludeOS, req.OS) {
+		return false
+	}
+
+	if !matchesInclude(rule.IncludeDevice, req.Device) {
+		return false
+	}
 
 	// Match Exclude values
 	if matchesExclude(rule.ExcludeApp, req.App) {
@@ -81,6 +84,10 @@ func ruleMatches(rule TargetingRule, req CampaignRequest) bool {
 	}
 
 	if matchesExclude(rule.ExcludeOS, req.OS) {
+		return false
+	}
+
+	if matchesExclude(rule.ExcludeDevice, req.Device) {
 		return false
 	}
 

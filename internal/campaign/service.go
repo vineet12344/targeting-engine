@@ -1,5 +1,6 @@
 package campaign
 
+// Methods under CampaignbService interface
 type CampaignService interface {
 	GetActiveCampaings() ([]Campaign, error)
 }

@@ -2,7 +2,7 @@ package campaign
 
 import "github.com/vineet12344/targeting-engine/pkg/db"
 
-// Fetch only Active campaigns and preload their values.
+// Fetch only Active campaigns from the DB and preload their values .
 func FetchActiveCampaings() ([]Campaign, error) {
 	var campaings []Campaign
 

@@ -1,0 +1,17 @@
+{
+	"ulid": "01JYGKZSYMEEP987FY4JCAMMR1",
+	"minTime": 1750613339351,
+	"maxTime": 1750615200000,
+	"stats": {
+		"numSamples": 8625,
+		"numSeries": 69,
+		"numChunks": 70
+	},
+	"compaction": {
+		"level": 1,
+		"sources": [
+			"01JYGKZSYMEEP987FY4JCAMMR1"
+		]
+	},
+	"version": 1
+}
