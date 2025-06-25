@@ -15,6 +15,7 @@ type CampaignRequest struct {
 // Main Logic
 func MatchCampaigns(req CampaignRequest) []Campaign {
 	campaigns := GetCachedCampaigns()
+
 	// var matches []Campaign
 	// log.Println("🔍 Matching for request:", req)
 
