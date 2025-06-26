@@ -6,10 +6,59 @@ import (
 	"sync"
 )
 
-type CampaignRequest struct {
-	App     string
-	OS      string
-	Country string
+func MatchBatchCampaigns(req CampaignRequest) []Campaign {
+	campaigns := GetCachedCampaigns()
+	numWorkers := 10
+
+	type Result struct {
+		match Campaign
+	}
+
+	jobs := make(chan Campaign, len(campaigns))
+	result := make(chan Result, len(campaigns))
+
+	var wg sync.WaitGroup
+
+	for _, c := range campaigns {
+		jobs <- c
+	}
+
+	close(jobs)
+
+	// Here we start N workers
+	for w := 0; w < numWorkers; w++ {
+		wg.Add(1)
+
+		go func(w int) {
+			log.Printf("Running Go-routine %v", w)
+			defer wg.Done()
+			for campaign := range jobs {
+				for _, rule := range campaign.Rules {
+					if ruleMatches(rule, req) {
+						result <- Result{match: campaign}
+						break
+					}
+				}
+			}
+		}(w)
+	}
+
+	// Wait for workers to finish
+	wg.Wait()
+	close(result)
+
+	var matches []Campaign
+	seen := make(map[string]bool)
+
+	for res := range result {
+		if !seen[res.match.ID] {
+			matches = append(matches, res.match)
+			seen[res.match.ID] = true
+		}
+	}
+
+	return matches
+
 }
 
 // Main Logic
@@ -50,7 +99,9 @@ func MatchCampaigns(req CampaignRequest) []Campaign {
 
 	}
 
+	// wait for all doroutines to complete their jobs
 	wg.Wait()
+	// close result channel
 	close(resultChan)
 
 	for c := range resultChan {
@@ -59,6 +110,7 @@ func MatchCampaigns(req CampaignRequest) []Campaign {
 
 	return matches
 }
+
 
 func ruleMatches(rule TargetingRule, req CampaignRequest) bool {
 	// Match Include values(if present)
@@ -71,6 +123,15 @@ func ruleMatches(rule TargetingRule, req CampaignRequest) bool {
 	if !matchesInclude(rule.IncludeOS, req.OS) {
 		return false
 	}
+	if !matchesInclude(rule.IncludeOS, req.OS) {
+		return false
+	}
+
+	if !matchesInclude(rule.IncludeDevice, req.Device) {
+		return false
+	}
+
+
 
 	// Match Exclude values
 	if matchesExclude(rule.ExcludeApp, req.App) {
@@ -84,6 +145,12 @@ func ruleMatches(rule TargetingRule, req CampaignRequest) bool {
 	if matchesExclude(rule.ExcludeOS, req.OS) {
 		return false
 	}
+
+	if matchesExclude(rule.ExcludeDevice, req.Device) {
+		return false
+	}
+
+	
 
 	return true
 

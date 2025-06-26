@@ -2,6 +2,7 @@ package campaign
 
 import "github.com/vineet12344/targeting-engine/pkg/db"
 
+// Seed temporary data in DB for testing
 func SeedCampaings() error {
 	campaigns := []Campaign{
 		{

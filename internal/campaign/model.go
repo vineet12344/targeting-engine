@@ -1,5 +1,7 @@
 package campaign
 
+// Define Database Models
+
 type Campaign struct {
 	ID       string `gorm:"primaryKey"`
 	Status   string // ACTIVE or INACTIVE
@@ -17,4 +19,6 @@ type TargetingRule struct {
 	ExcludeOS      string
 	IncludeCountry string
 	ExcludeCountry string
+	IncludeDevice  string
+	ExcludeDevice  string
 }
