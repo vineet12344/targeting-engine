@@ -19,6 +19,12 @@ func MatchBatchCampaigns(req CampaignRequest) []Campaign {
 
 	var wg sync.WaitGroup
 
+	for _, c := range campaigns {
+		jobs <- c
+	}
+
+	close(jobs)
+
 	// Here we start N workers
 	for w := 0; w < numWorkers; w++ {
 		wg.Add(1)
@@ -36,12 +42,6 @@ func MatchBatchCampaigns(req CampaignRequest) []Campaign {
 			}
 		}(w)
 	}
-
-	for _, c := range campaigns {
-		jobs <- c
-	}
-
-	close(jobs)
 
 	// Wait for workers to finish
 	wg.Wait()
@@ -110,6 +110,7 @@ func MatchCampaigns(req CampaignRequest) []Campaign {
 	return matches
 }
 
+
 func ruleMatches(rule TargetingRule, req CampaignRequest) bool {
 	// Match Include values(if present)
 	if !matchesInclude(rule.IncludeApp, req.App) {
@@ -129,6 +130,8 @@ func ruleMatches(rule TargetingRule, req CampaignRequest) bool {
 		return false
 	}
 
+
+
 	// Match Exclude values
 	if matchesExclude(rule.ExcludeApp, req.App) {
 		return false
@@ -145,6 +148,8 @@ func ruleMatches(rule TargetingRule, req CampaignRequest) bool {
 	if matchesExclude(rule.ExcludeDevice, req.Device) {
 		return false
 	}
+
+	
 
 	return true
 
